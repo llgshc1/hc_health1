@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTDMapper3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hcwawe.dao.CheckGroupDao">
+    <resultMap type="com.hcwawe.pojo.CheckGroup" id="baseResultMap">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="code" property="code"/>
+        <result column="helpCode" property="helpCode"/>
+        <result column="sex" property="sex"/>
+        <result column="remark" property="remark"/>
+        <result column="attention" property="attention"/>
+    </resultMap>
+<!--    多对多查询 检查项与检查组当中-->
+    <resultMap type="com.hcwawe.pojo.CheckGroup"
+               id="findByIdResultMap"
+               extends="baseResultMap">
+        <collection property="checkItems"
+                    javaType="ArrayList"
+                    ofType="com.hcwawe.pojo.CheckItem"
+                    column="id"
+                    select="com.hcwawe.dao.CheckItemDao.findCheckItemById">
+        </collection>
+    </resultMap>
+
+   <insert id="add" parameterType="com.hcwawe.pojo.CheckGroup">
+       <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">
+-- 传入的id被赋值给传入的对象 自增之后的id
+           select LAST_INSERT_ID()
+       </selectKey>
+       insert into t_checkgroup(code,name,sex,helpCode,remark,attention)
+       values
+       (#{code},#{name},#{sex},#{helpCode},#{remark},#{attention})
+   </insert>
+<!--    设置检查组和 检查项的关联-->
+   <insert id="setCheckGroupAndCheckItem">
+       insert into t_checkgroup_checkitem(checkgroup_id,checkitem_id)
+       values
+           (#{checkgroupId},#{checkitmId})
+   </insert>
+    <select id="selectByCondition" parameterType="String" resultType="com.hcwawe.pojo.CheckGroup">
+        select id,code,name , sex ,helpCode , remark , attention
+        from t_checkgroup
+        <where>
+            <if test="queryString != null and queryString.length > 0">
+                code = #{queryString} or name = #{queryString};
+            </if>
+        </where>
+    </select>
+    <select id="findById" parameterType="int" resultType="com.hcwawe.pojo.CheckGroup" >
+        select * from t_checkgroup where id = #{id};
+    </select>
+<!--    查询关联的检查项-->
+    <select id="findCheckItemIdsByCheckGroup" parameterType="int" resultType="int">
+        select checkitem_id from t_checkgroup_checkitem where checkgroup_id = #{id}
+    </select>
+    <update id="edit" parameterType="com.hcwawe.pojo.CheckGroup">
+        update t_checkgroup
+        <set>
+            <if test="code != null">
+                code = #{code},
+            </if>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="sex != null">
+                sex = #{sex},
+            </if>
+            <if test="helpCode != null">
+                helpCode = #{helpCode},
+            </if>
+
+
+            <if test="remark != null">
+                remark = #{remark},
+            </if>
+            <if test="attention != null">
+                attention = #{attention},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    <delete id="deleteAssociation" parameterType="int">
+        delete from t_checkgroup_checkitem where checkgroup_id = #{id}
+    </delete>
+    <delete id="deleteById" parameterType="int">
+        delete from t_checkgroup where id = #{id}
+    </delete>
+    <select id="findAll" resultType="com.hcwawe.pojo.CheckGroup">
+        select * from t_checkgroup
+     </select>
+<!--    根据套餐id查询关联的检查组详情-->
+    <select id="findCheckGroupById" parameterType="int" resultMap="findByIdResultMap">
+        select * from t_checkgroup
+        where id
+                  in (select checkgroup_id from t_setmeal_checkgroup where setmeal_id = #{id})
+    </select>
+</mapper>

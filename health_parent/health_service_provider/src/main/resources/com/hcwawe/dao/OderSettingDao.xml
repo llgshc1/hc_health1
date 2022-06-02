@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTDMapper3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hcwawe.dao.OderSettingDao">
+    <insert id="add" parameterType="com.hcwawe.pojo.OrderSetting">
+        insert into t_ordersetting
+            (orderDate,number,reservations)
+        values
+            (#{orderDate},#{number},#{reservations})
+    </insert>
+    <update id="editNumberByOrderDate" parameterType="com.hcwawe.pojo.OrderSetting">
+        update t_ordersetting
+        set number = #{number}
+        where orderDate = #{orderDate}
+    </update>
+    <select id="findCountByOrderDate" parameterType="date" resultType="long">
+        select count(*) from t_ordersetting where orderDate = #{orderDate}
+    </select>
+<select id="getOrderSettingByMonth" parameterType="map" resultType="com.hcwawe.pojo.OrderSetting">
+    select  * from t_ordersetting where orderDate between #{begin } and #{end}
+</select>
+    <update id="editReservationsByOrderDate" parameterType="com.hcwawe.pojo.OrderSetting">
+        update t_ordersetting set reservations = #{reservations} where orderDate = #{orderDate}
+    </update>
+    <select parameterType="date" id="findByDate" resultType="com.hcwawe.pojo.OrderSetting">
+    select * from t_ordersetting where orderDate = #{orderDate,jdbcType=DATE} </select>
+</mapper>
